@@ -6,19 +6,14 @@ using TMPro;
 public class TextManager : MonoBehaviour
 {
     public TextMeshProUGUI bestScoreText;
-    private MainManager mainManager;
-    private int points;
+    private SaveLoadData saveLoadData;
 
     // Start is called before the first frame update
     void Start()
     {
-        mainManager = FindObjectOfType<MainManager>().GetComponent<MainManager>(); // connect to MainManager script 
-        points = mainManager.m_Points; // assing points from Main Manager
+        saveLoadData = FindObjectOfType<SaveLoadData>().GetComponent<SaveLoadData>();
+        bestScoreText.text = "Best Score: " + saveLoadData.nameBestScore + " : " + saveLoadData.bestScoreInt;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+   
 }

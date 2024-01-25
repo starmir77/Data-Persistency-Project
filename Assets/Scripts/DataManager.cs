@@ -6,25 +6,19 @@ using TMPro;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
-[System.Serializable]
-class SaveData
-{
-    public string nameToSave;
-}
 
 public class DataManager : MonoBehaviour
 {
     public static DataManager Instance;
     public TMP_InputField nameField;
     public TextMeshProUGUI titleText;
-    public string path;
-    public int bestScoreInt;
-    public string nameHighestScore;
+    private string nameBestScore;
+    private int bestScoreInt;
 
- 
+
     private void Awake()
     {
-        if(Instance != null)
+        if (Instance != null)
         {
             Destroy(gameObject);
             return;
@@ -32,43 +26,56 @@ public class DataManager : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+
     }
 
-    void Start()
+
+    private void Start()
     {
-        string path = Application.persistentDataPath + "/savefile.json";
+        LoadScore();
+        LoadName();
+
+        titleText.text = "Best Score: " + nameBestScore + " : " + bestScoreInt;
+    }
+
+    private void StartGame() => SceneManager.LoadScene(1);
+
+    private void QuitGame() => Application.Quit();
+
+    public class SaveScore
+    {
+
+        public int bestScoreInt;
+    }
+
+    public class SaveNameScore
+    {
+        public string nameBestScore;
+    }
+
+    private void LoadScore()
+    {
+
+        string path = Application.persistentDataPath + "/savescore.json";
         if (File.Exists(path))
         {
             string json = File.ReadAllText(path);
-            SavePointData data = JsonUtility.FromJson<SavePointData>(json);
-            bestScoreInt = data.currentScoreInt; // setting bestScoreInt
-            nameHighestScore = data.nameCurrent;
-            Debug.Log("Loading Worked: " + bestScoreInt + nameHighestScore);
-            titleText.text = "Best Score: " + nameHighestScore + ": " + bestScoreInt;
+            SaveScore data = JsonUtility.FromJson<SaveScore>(json);
+            bestScoreInt = data.bestScoreInt;
+
         }
     }
 
-    public void StartGame() => SceneManager.LoadScene(1);
+    private void LoadName()
+    {
+        string path1 = Application.persistentDataPath + "/savename.json";
+        if (File.Exists(path1))
+        {
+            string json = File.ReadAllText(path1);
+            SaveNameScore data = JsonUtility.FromJson<SaveNameScore>(json);
+            nameBestScore = data.nameBestScore; // setting bestScoreInt
 
-    public void QuitGame() => Application.Quit();
+        }
+    }
 
-    // public void SaveName()
-    //{
-    //  SaveData data = new SaveData();
-    //data.nameToSave = nameField.text;
-    //string json = JsonUtility.ToJson(data);
-    //File.WriteAllText(Application.persistentDataPath + "/savefile.json", json);
-    //Debug.Log("Saving worked here: " + Application.persistentDataPath);
-    //}
-
-    //public void LoadName()
-    //{
-    // string path = Application.persistentDataPath + "/savefile.json";
-    //if (File.Exists(path))
-    // {
-    //   string json = File.ReadAllText(path);
-    // SaveData data = JsonUtility.FromJson<SaveData>(json);
-    //nameField.text = data.nameToSave;
-    // Debug.Log("Loading Worked" + nameField.text);
-    //}
 }

@@ -8,14 +8,6 @@ using System.IO;
 using System.Reflection;
 using UnityEngine.UIElements;
 
-[System.Serializable]
-class SavePointData
-{
-    public int currentScoreInt;
-    public int bestScoreInt;
-    public string nameHighestScore;
-    public string nameCurrent;
-}
 
 public class MainManager : MonoBehaviour
 {
@@ -30,21 +22,23 @@ public class MainManager : MonoBehaviour
     public int m_Points;
 
     private bool m_GameOver = false;
-    private TextManager textManager;
-    private TextMeshProUGUI bestScoreText;
-    public int bestScoreInt;
-    public int currentScoreInt;
-    public string nameHighestScore;
-    public string nameCurrent;
+    private SaveLoadData saveLoadData;
+    public GameObject resetButton;
+    public string nameMenu;
 
+
+    
 
     // Start is called before the first frame update
-    void Start()
+     void Start()
     {
-        // connect to Text Manager script 
-        textManager = FindObjectOfType<TextManager>().GetComponent<TextManager>();
-        bestScoreText = textManager.bestScoreText;
+       
+        saveLoadData = FindObjectOfType<SaveLoadData>().GetComponent<SaveLoadData>();
 
+        // load previous best score
+        //saveLoadData.LoadPlayerInfo();
+        saveLoadData.LoadGameScore();
+        saveLoadData.LoadName();
 
         // start of game instructions
         const float step = 0.6f;
@@ -61,8 +55,7 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
-
-       OnLoad();
+        
 
     }
 
@@ -102,42 +95,20 @@ public class MainManager : MonoBehaviour
 
         m_GameOver = true;
         GameOverText.SetActive(true);
+        resetButton.SetActive(true);
+        nameMenu = DataManager.Instance.nameField.text;
 
-        if (m_Points > bestScoreInt)
+        if (m_Points > saveLoadData.bestScoreInt)
         {
-            SaveGameScore();
+            saveLoadData.SaveGameScore(m_Points);
+            saveLoadData.SaveName(nameMenu);
+        //  saveLoadData.SavePlayerInfo
         }
 
-    }
 
-
-    public void SaveGameScore () // Save game score & player name
-    {
-
-        SavePointData data = new SavePointData();
-        data.currentScoreInt = m_Points;
-        data.nameCurrent = DataManager.Instance.nameField.text;
-        string json = JsonUtility.ToJson(data);
-        File.WriteAllText(Application.persistentDataPath + "/savefile.json", json);
-        Debug.Log("Saving score worked here: " + m_Points + data.nameHighestScore);
-        
 
     }
 
-    public void LoadGameScore() // Load game score & player name
-    {
-        string path = Application.persistentDataPath + "/savefile.json";
-        if (File.Exists(path))
-        {
-            string json = File.ReadAllText(path);
-            SavePointData data = JsonUtility.FromJson<SavePointData>(json);
-            bestScoreInt = data.currentScoreInt; // setting bestScoreInt
-            nameHighestScore = data.nameCurrent;
-            Debug.Log("Loading Worked: " + bestScoreInt + nameHighestScore);
-
-        }
-
-    }
 
     public void ResetGameScore() // Reset game score 
     {
@@ -145,13 +116,8 @@ public class MainManager : MonoBehaviour
         if (File.Exists(path))
         {
            File.Delete(path);
+           Debug.Log("Reset score worked here");
         }
-    }
-
-    public void OnLoad() // load highest score & name on started game
-    {
-        LoadGameScore();
-        bestScoreText.text = "Best Score: " + nameHighestScore + " " + bestScoreInt;
     }
 
 
